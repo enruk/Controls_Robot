@@ -12,6 +12,8 @@
 #define pin_motor2_start 8 
 #define pin_motor2_dir 9
 
+#define pin_com 13
+
 // Status Motor 1 
 bool motor1_start = false;
 bool motor1_dir = true;
@@ -26,13 +28,13 @@ float motor2_target_angle;
 
 
 // Encoder  1
-float encoder1_Pos = 0;
+float encoder1_Pos = 450;
 int encoder1_Pin_A_Last = LOW;
 int encoder1_Pin_A_Now = LOW;
 int encoder1_Pin_B_Now = LOW;
 
 // Encoder  2
-float encoder2_Pos = 0;
+float encoder2_Pos = 450;
 int encoder2_Pin_A_Last = LOW;
 int encoder2_Pin_A_Now = LOW;
 int encoder2_Pin_B_Now = LOW;
@@ -53,8 +55,7 @@ float X;
 float Y;
 int circle = 1;
 
-bool check_angle_is_valid(int angle,int upper_limit,int lower_limit)
-{
+bool check_angle_is_valid(int angle,int upper_limit,int lower_limit){
     bool valid = false;
     if (angle > lower_limit and angle < upper_limit){
         valid = true;
@@ -208,8 +209,7 @@ float* pick_angle(float q1_1,float q1_2,float q2_1,float q2_2,float upper_limit,
     return q_soll;
 }
 
-float* ikp(float X, float Y, float L_A1, float L_A2, float L_B1, float L_B2, float D)
-{
+float* ikp(float X, float Y, float L_A1, float L_A2, float L_B1, float L_B2, float D){
   float* q = new float[4];
   
   /* Achse q1 */
@@ -251,7 +251,7 @@ float move_motor_to_angle(){
   digitalWrite(pin_motor2_start, motor2_start); 
   digitalWrite(pin_motor2_dir, motor2_dir);
 
-  while (motor1_start && motor2_start){
+  while (motor1_start || motor2_start){
 
     // read encoders
     encoder1_Pin_A_Now = digitalRead(pin_encoder1_A);
@@ -259,59 +259,66 @@ float move_motor_to_angle(){
 
     encoder2_Pin_A_Now = digitalRead(pin_encoder2_A);
     encoder2_Pin_B_Now = digitalRead(pin_encoder2_B);
-
+    //Serial.println(encoder1_Pin_A_Now);
 
 
     // Update Encoder 1
-    if ((encoder1_Pin_A_Last == HIGH) && (encoder1_Pin_A_Now == LOW)) {
-      if (encoder1_Pin_B_Now == HIGH) {
-        encoder1_Pos++;
+    if (motor1_start){
+      if ((encoder1_Pin_A_Last == HIGH) && (encoder1_Pin_A_Now == LOW)) {
+        if (encoder1_Pin_B_Now == HIGH) {
+          encoder1_Pos++;
+        } else {
+          encoder1_Pos--;
+        }
+      }
+      encoder1_Pin_A_Last = encoder1_Pin_A_Now;
+
+      // Check if target angle was reached
+      motor1_current_angle = encoder1_Pos*0.2;
+      //Serial.println(motor1_current_angle);
+      if (motor1_dir){
+        if (motor1_current_angle > motor1_target_angle){
+          motor1_start = false; // stop the motor as soon as its reached the target angle
+          digitalWrite(pin_motor1_start, motor1_start);
+          Serial.println("Stop M1");
+
+        }
       } else {
-        encoder1_Pos--;
+        if (motor1_current_angle < motor1_target_angle){
+          motor1_start = false; // stop the motor as soon as its reached the target angle
+          digitalWrite(pin_motor1_start, motor1_start);
+          Serial.println("Stop M1");
+        }
       }
     }
-    encoder1_Pin_A_Last = encoder1_Pin_A_Now;
-
-    // Check if target angle was reached
-    motor1_current_angle = encoder1_Pos*0.2;
-    //Serial.println(current_motor_angle);
-    if (motor1_dir){
-      if (motor1_current_angle > motor1_target_angle){
-        motor1_start = false; // stop the motor as soon as its reached the target angle
-        digitalWrite(pin_motor1_start, motor1_start);
-
-      }
-    } else {
-      if (motor1_current_angle < motor1_target_angle){
-        motor1_start = false; // stop the motor as soon as its reached the target angle
-        digitalWrite(pin_motor1_start, motor1_start);
-      }
-    }
-
 
 
     // Update Encoder 2
-    if ((encoder2_Pin_A_Last == HIGH) && (encoder2_Pin_A_Now == LOW)) {
-      if (encoder2_Pin_B_Now == HIGH) {
-        encoder2_Pos++;
-      } else {
-        encoder2_Pos--;
+    if (motor2_start){
+      if ((encoder2_Pin_A_Last == HIGH) && (encoder2_Pin_A_Now == LOW)) {
+        if (encoder2_Pin_B_Now == HIGH) {
+          encoder2_Pos++;
+        } else {
+          encoder2_Pos--;
+        }
       }
-    }
-    encoder2_Pin_A_Last = encoder2_Pin_A_Now;
+      encoder2_Pin_A_Last = encoder2_Pin_A_Now;
 
-    // Check if target angle was reached
-    motor2_current_angle = encoder2_Pos*0.2;
-    //Serial.println(current_motor_angle);
-    if (motor2_dir){
-      if (motor2_current_angle > motor2_target_angle){
-        motor2_start = false; // stop the motor as soon as its reached the target angle
-        digitalWrite(pin_motor2_start, motor2_start);
-      }
-    } else {
-      if (motor2_current_angle < motor2_target_angle){
-        motor2_start = false; // stop the motor as soon as its reached the target angle
-        digitalWrite(pin_motor2_start, motor2_start);
+      // Check if target angle was reached
+      motor2_current_angle = encoder2_Pos*0.2;
+      //Serial.println(motor2_current_angle);
+      if (motor2_dir){
+        if (motor2_current_angle > motor2_target_angle){
+          motor2_start = false; // stop the motor as soon as its reached the target angle
+          digitalWrite(pin_motor2_start, motor2_start);
+          Serial.println("Stop M2");
+        }
+      } else {
+        if (motor2_current_angle < motor2_target_angle){
+          motor2_start = false; // stop the motor as soon as its reached the target angle
+          digitalWrite(pin_motor2_start, motor2_start);
+          Serial.println("Stop M2");
+        }
       }
     }
   }
@@ -335,7 +342,11 @@ void setup() {
   pinMode(pin_motor2_start, OUTPUT); 
   pinMode(pin_motor2_dir, OUTPUT);
 
+  pinMode(pin_com, OUTPUT);
+  digitalWrite(pin_motor1_dir,LOW);
+
   Serial.begin(9600); // Initialisiere die serielle Kommunikation
+  delay(5000);
 }
 
 
@@ -360,10 +371,8 @@ void loop() {
     Y = 180;
   }
   
-  Serial.println(circle);
+
   
-
-
   // Solve IKP
   float* q = ikp(X,Y,L_A1, L_A2, L_B1, L_B2, D);
 
@@ -377,13 +386,14 @@ void loop() {
 
   float* q_soll = pick_angle(q1_1,q1_2,q2_1,q2_2,upper_limit,lower_limit,L_A1,L_B1,D);
   motor1_target_angle = q_soll[0];
-  motor2_target_angle = q_soll[1];
+  motor2_target_angle = q_soll[1]; 
+  
 
 
   // Get the direction
   float motor1_angle_diff = motor1_target_angle - motor1_current_angle;
 
-  if (motor1_angle_diff < 0) {
+  if (motor1_angle_diff > 0) {
     digitalWrite(pin_motor1_dir,HIGH);
     motor1_dir = true;
   } else {
@@ -392,17 +402,23 @@ void loop() {
   }
 
   float motor2_angle_diff = motor2_target_angle - motor2_current_angle;
-  if (motor2_angle_diff < 0) {
+  if (motor2_angle_diff > 0) {
     digitalWrite(pin_motor2_dir,HIGH);
     motor2_dir = true;
   } else {
     digitalWrite(pin_motor2_dir,LOW);
     motor2_dir = false;
   }
+  
+
 
   // Move the motors
   motor1_start = true;
   motor2_start = true;
+  Serial.println(motor1_start);
+  Serial.println(motor2_start);
+  Serial.println(motor1_target_angle);
+  Serial.println(motor2_target_angle);
   move_motor_to_angle();
 
 
@@ -413,5 +429,7 @@ void loop() {
   }
   delete[] q;
   delete[] q_soll;
+
+  delay(5000);
 }
 
