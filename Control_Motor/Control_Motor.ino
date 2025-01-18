@@ -17,7 +17,10 @@
 
 #define pin_com 13
 
-
+// Time
+unsigned long startTime; 
+unsigned long endTime; 
+unsigned long duration;
 
 // Robot
 int x = 0;
@@ -26,8 +29,8 @@ bool direction_q2;
 
 // Nice to change
 bool MS1 = LOW;
-bool MS2 = LOW;
-int motordelay= 3;
+bool MS2 = HIGH;
+int motordelay= 1;
 
 // Communication
 volatile bool motor1_start = false;
@@ -65,20 +68,23 @@ void loop() {
   motor2_start = digitalRead(pin_m2_start); 
   motor2_dir = digitalRead(pin_m2_dir);
 
-  Serial.println(digitalRead(pin_MS1)); 
-  Serial.println(digitalRead(pin_MS2));
+  //Serial.println(digitalRead(pin_MS1)); 
+  //Serial.println(digitalRead(pin_MS2));
 
   //Serial.println(motor1_start);
+  //startTime = millis();
   if (motor1_start){
     // check direction
     digitalWrite(pin_dir_q1, motor1_dir ? HIGH : LOW);
 
     // move the motor
     digitalWrite(pin_stp_q1,HIGH);
-    delay(3);
+    delay(motordelay);
     digitalWrite(pin_stp_q1,LOW);
-    delay(3);
+    delay(motordelay);
   }
+  //endTime = millis();
+  //Serial.println(endTime-startTime);
 
   //Serial.println(motor2_start);
   if (motor2_start){
@@ -87,9 +93,9 @@ void loop() {
 
     // move the motor
     digitalWrite(pin_stp_q2,HIGH);
-    delay(3);
+    delay(motordelay);
     digitalWrite(pin_stp_q2,LOW);
-    delay(3);
+    delay(motordelay);
   }
 
 }

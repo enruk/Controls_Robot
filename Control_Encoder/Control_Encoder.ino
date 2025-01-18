@@ -14,6 +14,11 @@
 
 #define pin_com 13
 
+// Time
+unsigned long startTime; 
+unsigned long endTime; 
+unsigned long duration;
+
 // Status Motor 1 
 bool motor1_start = false;
 bool motor1_dir = true;
@@ -28,23 +33,23 @@ float motor2_target_angle;
 
 
 // Encoder  1
-float encoder1_Pos = 450;
+float encoder1_Pos = 450; // Equal to 90 degress
 int encoder1_Pin_A_Last = LOW;
 int encoder1_Pin_A_Now = LOW;
 int encoder1_Pin_B_Now = LOW;
 
 // Encoder  2
-float encoder2_Pos = 450;
+float encoder2_Pos = 450; // Equal to 90 degress
 int encoder2_Pin_A_Last = LOW;
 int encoder2_Pin_A_Now = LOW;
 int encoder2_Pin_B_Now = LOW;
 
 // Robot Data
-float L_A1 = 145;
-float L_A2 = 115;
-float L_B1 = 145;
-float L_B2 = 115;
-float D = 100;
+float L_A1 = 134;
+float L_A2 = 96;
+float L_B1 = 134;
+float L_B2 = 94;
+float D = 80;
 
 // Working stuff
 int x;
@@ -252,14 +257,14 @@ float move_motor_to_angle(){
   digitalWrite(pin_motor2_dir, motor2_dir);
 
   while (motor1_start || motor2_start){
-
+    //startTime = millis();
     // read encoders
     encoder1_Pin_A_Now = digitalRead(pin_encoder1_A);
     encoder1_Pin_B_Now = digitalRead(pin_encoder1_B);
 
     encoder2_Pin_A_Now = digitalRead(pin_encoder2_A);
     encoder2_Pin_B_Now = digitalRead(pin_encoder2_B);
-    //Serial.println(encoder1_Pin_A_Now);
+    //Serial.println(encoder2_Pin_B_Now);
 
 
     // Update Encoder 1
@@ -298,6 +303,7 @@ float move_motor_to_angle(){
       if ((encoder2_Pin_A_Last == HIGH) && (encoder2_Pin_A_Now == LOW)) {
         if (encoder2_Pin_B_Now == HIGH) {
           encoder2_Pos++;
+          //Serial.println("pups");
         } else {
           encoder2_Pos--;
         }
@@ -321,6 +327,8 @@ float move_motor_to_angle(){
         }
       }
     }
+    //endTime = millis();
+    //Serial.println(endTime-startTime);
   }
 }
 
@@ -355,19 +363,19 @@ void loop() {
 
   // Choose Target Position
   if (circle == 1){
-    X = -50;
+    X = 0;
     Y = 180;
   } 
   else if (circle == 2){
-    X = 100;
-    Y = 200;
-  }
-  else if (circle == 3){
     X = 0;
     Y = 200;
   }
+  else if (circle == 3){
+    X = 80;
+    Y = 200;
+  }
   else if (circle == 4){
-    X = 150;
+    X = 80;
     Y = 180;
   }
   
@@ -430,6 +438,6 @@ void loop() {
   delete[] q;
   delete[] q_soll;
 
-  delay(5000);
+  delay(500);
 }
 
