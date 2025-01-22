@@ -32,6 +32,9 @@ bool MS1 = LOW;
 bool MS2 = HIGH;
 int motordelay= 1;
 
+
+
+
 // Communication
 volatile bool motor1_start = false;
 volatile bool motor1_dir = false;

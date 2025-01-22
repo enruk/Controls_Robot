@@ -82,7 +82,7 @@ float* findMax(float array[], int size) {
   return maxVal;
 }
 
-float* pick_angle(float q1_1,float q1_2,float q2_1,float q2_2,float upper_limit,float lower_limit,float L_A1,float L_B1,float D){
+float* pick_angle(float q1_1,float q1_2,float q2_1,float q2_2,float upper_limit_q1,float lower_limit_q1, float upper_limit_q2, float lower_limit_q2,float L_A1,float L_B1,float D){
 
     /* init*/
     float* q_soll = new float[2];
@@ -107,13 +107,13 @@ float* pick_angle(float q1_1,float q1_2,float q2_1,float q2_2,float upper_limit,
     float* max_diff = findMax(diff,4);
 
     /* check which angles are within the allowed range*/
-    bool q1_valid = check_angle_is_valid(q1_1,upper_limit,lower_limit) or check_angle_is_valid(q1_2,upper_limit,lower_limit);
-    bool q2_valid = check_angle_is_valid(q2_1,upper_limit,lower_limit) or check_angle_is_valid(q2_2,upper_limit,lower_limit);
+    bool q1_valid = check_angle_is_valid(q1_1,upper_limit_q1,lower_limit_q1) or check_angle_is_valid(q1_2,upper_limit_q1,lower_limit_q1);
+    bool q2_valid = check_angle_is_valid(q2_1,upper_limit_q2,lower_limit_q2) or check_angle_is_valid(q2_2,upper_limit_q2,lower_limit_q2);
     
-    bool q1_1_valid = check_angle_is_valid(q1_1,upper_limit,lower_limit);
-    bool q1_2_valid = check_angle_is_valid(q1_2,upper_limit,lower_limit);
-    bool q2_1_valid = check_angle_is_valid(q2_1,upper_limit,lower_limit);
-    bool q2_2_valid = check_angle_is_valid(q2_2,upper_limit,lower_limit);
+    bool q1_1_valid = check_angle_is_valid(q1_1,upper_limit_q1,lower_limit_q1);
+    bool q1_2_valid = check_angle_is_valid(q1_2,upper_limit_q1,lower_limit_q1);
+    bool q2_1_valid = check_angle_is_valid(q2_1,upper_limit_q2,lower_limit_q2);
+    bool q2_2_valid = check_angle_is_valid(q2_2,upper_limit_q2,lower_limit_q2);
     
     /* choose the angles, first check if valid, then check which distance is the biggest*/
     if (q1_valid and q2_valid){
@@ -363,20 +363,20 @@ void loop() {
 
   // Choose Target Position
   if (circle == 1){
-    X = 0;
-    Y = 180;
+    X = -100;
+    Y = 120;
   } 
   else if (circle == 2){
-    X = 0;
+    X = 80;
     Y = 200;
   }
   else if (circle == 3){
-    X = 80;
-    Y = 200;
+    X = 0;
+    Y = 150;
   }
   else if (circle == 4){
-    X = 80;
-    Y = 180;
+    X = 180;
+    Y = 120;
   }
   
 
@@ -389,10 +389,17 @@ void loop() {
   float q2_1 = q[2];
   float q2_2 = q[3];
 
-  float upper_limit = 160;
-  float lower_limit = 20;
+  Serial.println(q1_1);
+  Serial.println(q1_2);
+  Serial.println(q2_1);
+  Serial.println(q2_2);
 
-  float* q_soll = pick_angle(q1_1,q1_2,q2_1,q2_2,upper_limit,lower_limit,L_A1,L_B1,D);
+  float upper_limit_q1 = 180;
+  float lower_limit_q1 = 45;
+  float upper_limit_q2 = 135;
+  float lower_limit_q2 = 0;
+
+  float* q_soll = pick_angle(q1_1,q1_2,q2_1,q2_2,upper_limit_q1,lower_limit_q1,upper_limit_q2,lower_limit_q2,L_A1,L_B1,D);
   motor1_target_angle = q_soll[0];
   motor2_target_angle = q_soll[1]; 
   
